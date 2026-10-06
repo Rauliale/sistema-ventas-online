@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 // Reemplazar el access token por el de tu cuenta. Idealmente desde process.env
-const accessToken = process.env.MP_ACCESS_TOKEN || '';
+const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const { orderData, items } = body;
 
     if (!accessToken) {
-      return NextResponse.json({ error: 'Falta configurar MP_ACCESS_TOKEN' }, { status: 500 });
+      return NextResponse.json({ error: 'Falta configurar MERCADOPAGO_ACCESS_TOKEN' }, { status: 500 });
     }
 
     const client = new MercadoPagoConfig({ accessToken, options: { timeout: 5000 } });
