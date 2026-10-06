@@ -4,6 +4,7 @@ import { ShoppingCart } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
   const toggleCart = useCartStore((state) => state.toggleCart);
@@ -21,9 +22,9 @@ export const Navbar: React.FC = () => {
         </div>
         
         <nav className="hidden md:flex gap-6">
-          <a href="#" className="text-sm font-medium text-text-main hover:text-primary">Inicio</a>
-          <a href="#" className="text-sm font-medium text-text-main hover:text-primary">Categorías</a>
-          <a href="#" className="text-sm font-medium text-text-main hover:text-primary">Ofertas</a>
+          <Link href="/" className="text-sm font-medium text-text-main hover:text-primary transition-colors">Inicio</Link>
+          <Link href="/#catalogo" className="text-sm font-medium text-text-main hover:text-primary transition-colors">Catálogo</Link>
+          <Link href="/#ofertas" className="text-sm font-medium text-text-main hover:text-primary transition-colors">Promociones</Link>
         </nav>
 
         <div className="flex items-center gap-4">

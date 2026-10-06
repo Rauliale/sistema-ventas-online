@@ -60,17 +60,24 @@ export default async function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Banner promocional */}
-      <section className="mb-12 rounded-xl bg-primary p-8 text-surface shadow-md">
-        <div className="max-w-2xl">
-          <h1 className="mb-4 text-4xl font-bold">Ofertas de Temporada</h1>
-          <p className="mb-6 text-lg text-primary-100 opacity-90">
-            Aprovechá los mejores combos en herramientas eléctricas e inalámbricas. 
-            Calidad garantizada.
+      {/* Hero Banner */}
+      <section className="mb-12 relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-blue-900 px-8 py-16 text-surface shadow-xl">
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+        <div className="relative z-10 mx-auto max-w-3xl text-center">
+          <h1 className="mb-4 text-5xl font-extrabold tracking-tight md:text-6xl">
+            Construye con <span className="text-secondary">Confianza</span>
+          </h1>
+          <p className="mb-8 text-lg text-blue-100 md:text-xl">
+            Encontrá las mejores herramientas manuales, eléctricas y accesorios para tu proyecto. Calidad y garantía en un solo lugar.
           </p>
-          <button className="rounded-md bg-secondary px-6 py-3 font-semibold text-text-main hover:bg-yellow-500 transition-colors">
-            Ver Combos
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button className="w-full sm:w-auto rounded-full bg-secondary px-8 py-3 font-bold text-gray-900 shadow-lg hover:bg-yellow-400 hover:scale-105 transition-all">
+              Ver Catálogo
+            </button>
+            <button className="w-full sm:w-auto rounded-full border-2 border-surface px-8 py-3 font-bold text-surface hover:bg-white/10 transition-all">
+              Promociones
+            </button>
+          </div>
         </div>
       </section>
 

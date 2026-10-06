@@ -32,19 +32,22 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ initialProducts 
   }, [initialProducts, searchTerm, selectedCategory]);
 
   return (
-    <section>
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center justify-between border-b border-gray-200 pb-4">
-        <h2 className="text-2xl font-semibold text-text-main">Catálogo de Productos</h2>
+    <section id="catalogo" className="scroll-mt-24">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center justify-between border-b border-gray-200 pb-6">
+        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Nuestro Catálogo</h2>
         
         {/* Buscador */}
-        <div className="flex-1 max-w-md">
+        <div className="flex-1 max-w-md relative">
           <input
             type="text"
             placeholder="Buscar por nombre o SKU..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full rounded-full border border-gray-300 bg-gray-50 px-5 py-3 pr-10 text-sm focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all"
           />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </div>
         </div>
       </div>
 
