@@ -1,8 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { supabase } from '../../../../../lib/supabase/client';
-import { Button } from '../../../../../components/ui/Button';
+import { supabase } from '../../../../lib/supabase/client';
+import { Button } from '../../../../components/ui/Button';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft, Search } from 'lucide-react';
