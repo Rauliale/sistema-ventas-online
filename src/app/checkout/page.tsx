@@ -105,11 +105,26 @@ export default function CheckoutPage() {
       router.push('/');
     } else {
       toast.success('¡Orden guardada! Redirigiendo a Mercado Pago...');
-      // TODO: Redirigir a la URL de preferencia generada por backend de MercadoPago
-      // Por ahora simulamos
-      setTimeout(() => {
+      
+      try {
+        const response = await fetch('/api/mercadopago', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderData, items: orderItemsPayload }),
+        });
+
+        const data = await response.json();
+        
+        if (data.init_point) {
+          window.location.href = data.init_point;
+        } else {
+          toast.error('No se pudo generar el link de pago: ' + (data.error || 'Error desconocido'));
+          router.push('/');
+        }
+      } catch (err) {
+        toast.error('Error de conexión con Mercado Pago');
         router.push('/');
-      }, 2000);
+      }
     }
   };
 
