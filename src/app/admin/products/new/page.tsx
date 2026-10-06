@@ -16,6 +16,8 @@ export default function NewProductPage() {
     sku: '',
     title: '',
     description: '',
+    cost_price: '',
+    profit_margin: '30', // Margen por defecto
     price: '',
     compare_at_price: '',
     category_id: '',
@@ -33,12 +35,28 @@ export default function NewProductPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    
+    setFormData(prev => {
+      let newState = { ...prev };
+      
+      if (type === 'checkbox') {
+        newState[name as keyof typeof newState] = (e.target as HTMLInputElement).checked as never;
+      } else {
+        newState[name as keyof typeof newState] = value as never;
+      }
+
+      // Auto-calcular Precio de Venta si cambia el costo o el margen
+      if (name === 'cost_price' || name === 'profit_margin') {
+        const cost = parseFloat(name === 'cost_price' ? value : newState.cost_price) || 0;
+        const margin = parseFloat(name === 'profit_margin' ? value : newState.profit_margin) || 0;
+        if (cost >= 0 && margin >= 0) {
+          const finalPrice = cost * (1 + margin / 100);
+          newState.price = finalPrice.toFixed(2);
+        }
+      }
+
+      return newState;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +67,8 @@ export default function NewProductPage() {
       sku: formData.sku,
       title: formData.title,
       description: formData.description,
+      cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
+      profit_margin: formData.profit_margin ? parseFloat(formData.profit_margin) : null,
       price: parseFloat(formData.price),
       compare_at_price: formData.compare_at_price ? parseFloat(formData.compare_at_price) : null,
       category_id: formData.category_id || null,
@@ -100,9 +120,21 @@ export default function NewProductPage() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-text-main mb-1">Precio Final ($) *</label>
-            <input required type="number" min="0" step="0.01" name="price" value={formData.price} onChange={handleChange} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Ej: 150000" />
+          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div>
+              <label className="block text-sm font-medium text-text-main mb-1">Precio de Costo ($)</label>
+              <input type="number" min="0" step="0.01" name="cost_price" value={formData.cost_price} onChange={handleChange} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Ej: 10000" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text-main mb-1">Ganancia (%)</label>
+              <input type="number" min="0" step="0.1" name="profit_margin" value={formData.profit_margin} onChange={handleChange} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Ej: 30" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-main mb-1">Precio Final de Venta ($) *</label>
+              <input required type="number" min="0" step="0.01" name="price" value={formData.price} onChange={handleChange} className="w-full rounded-md border-primary border-2 bg-blue-50 px-3 py-2 focus:border-primary focus:outline-none" placeholder="Calculado auto" />
+            </div>
           </div>
 
           <div>

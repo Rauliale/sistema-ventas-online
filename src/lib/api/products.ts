@@ -5,6 +5,8 @@ export interface Product {
   sku: string;
   title: string;
   description: string;
+  cost_price: number | null;
+  profit_margin: number | null;
   price: number;
   compare_at_price: number | null;
   images: string[];
