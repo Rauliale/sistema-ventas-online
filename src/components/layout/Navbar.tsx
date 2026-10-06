@@ -3,10 +3,15 @@ import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 
+import { usePathname } from 'next/navigation';
+
 export const Navbar: React.FC = () => {
   const toggleCart = useCartStore((state) => state.toggleCart);
   const totalItems = useCartStore((state) => state.getTotalItems());
   const totalAmount = useCartStore((state) => state.getTotal());
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/admin')) return null;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-surface shadow-sm">

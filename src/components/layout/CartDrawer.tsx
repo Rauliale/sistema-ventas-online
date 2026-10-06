@@ -4,8 +4,13 @@ import { X, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 import { Button } from '../ui/Button';
 
+import { usePathname } from 'next/navigation';
+
 export const CartDrawer: React.FC = () => {
   const { items, isOpen, toggleCart, updateQuantity, removeItem, getTotal } = useCartStore();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/admin')) return null;
 
   if (!isOpen) return null;
 
