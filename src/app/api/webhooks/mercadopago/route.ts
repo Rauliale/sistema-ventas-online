@@ -2,20 +2,17 @@ import { NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 
-// Usamos el service_role key para poder actualizar la DB saltándonos las reglas de seguridad (RLS)
-// ya que este código corre en el servidor seguro, no en el navegador.
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
-const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
+// Se inicializa dentro del handler para que no explote el build si faltan variables
 
 export async function POST(request: Request) {
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('data.id') || url.searchParams.get('id');
     const type = url.searchParams.get('type') || url.searchParams.get('topic');
+
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
     // Mercado Pago envía 'payment' en el type cuando se crea/actualiza un pago
     if (type === 'payment' && id) {
@@ -32,7 +29,9 @@ export async function POST(request: Request) {
       const orderId = paymentInfo.external_reference;
       const paymentStatus = paymentInfo.status; // 'approved', 'pending', 'rejected', etc.
       
-      if (orderId) {
+      if (orderId && supabaseUrl && supabaseServiceKey) {
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+        
         // Actualizamos nuestra base de datos
         const { error } = await supabaseAdmin
           .from('orders')
