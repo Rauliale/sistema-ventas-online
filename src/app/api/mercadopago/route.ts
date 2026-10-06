@@ -24,6 +24,13 @@ export async function POST(request: Request) {
       currency_id: 'ARS',
     }));
 
+    // Usar la URL de Vercel si existe, sino localhost
+    const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL 
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` 
+      : process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : 'http://localhost:3000';
+
     const result = await preference.create({
       body: {
         items: preferenceItems,
@@ -32,9 +39,9 @@ export async function POST(request: Request) {
           email: orderData.customer_email,
         },
         back_urls: {
-          success: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/?status=success`,
-          failure: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/?status=failure`,
-          pending: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/?status=pending`,
+          success: `${siteUrl}/?status=success`,
+          failure: `${siteUrl}/?status=failure`,
+          pending: `${siteUrl}/?status=pending`,
         },
         auto_return: 'approved',
         external_reference: orderData.id, // Relacionamos el pago con nuestro ID de orden
