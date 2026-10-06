@@ -34,13 +34,33 @@ export default function NewProductPage() {
     is_active: true
   });
 
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      const { data } = await supabase.from('categories').select('id, name');
-      if (data) setCategories(data);
-    };
     fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase.from('categories').select('id, name');
+    if (data) setCategories(data);
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    const { data, error } = await supabase.from('categories').insert([{ name: newCategoryName }]).select();
+    
+    if (error) {
+      toast.error('Error al crear categoría: ' + error.message);
+    } else if (data && data.length > 0) {
+      toast.success('Categoría agregada');
+      setCategories(prev => [...prev, data[0]]);
+      setFormData(prev => ({ ...prev, category_id: data[0].id }));
+      setIsCreatingCategory(false);
+      setNewCategoryName('');
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -107,7 +127,7 @@ export default function NewProductPage() {
       is_active: formData.is_active
     };
 
-    const { error } = await supabase.from('products').insert(productPayload);
+    const { error } = await supabase.from('products').insert([productPayload]);
 
     setIsSubmitting(false);
 
@@ -143,12 +163,36 @@ export default function NewProductPage() {
 
           <div>
             <label className="block text-sm font-medium text-text-main mb-1">Categoría</label>
-            <select name="category_id" value={formData.category_id} onChange={handleChange} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-              <option value="">Selecciona una categoría...</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
+            {!isCreatingCategory ? (
+              <div className="flex gap-2">
+                <select name="category_id" value={formData.category_id} onChange={handleChange} className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                  <option value="">Selecciona una categoría...</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+                <button type="button" onClick={() => setIsCreatingCategory(true)} className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-medium rounded-md text-text-main transition-colors">
+                  + Nueva
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={newCategoryName} 
+                  onChange={(e) => setNewCategoryName(e.target.value)} 
+                  placeholder="Nombre categoría..." 
+                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none text-sm" 
+                  autoFocus
+                />
+                <button type="button" onClick={handleCreateCategory} className="px-3 py-2 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-md transition-colors">
+                  Guardar
+                </button>
+                <button type="button" onClick={() => setIsCreatingCategory(false)} className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-medium rounded-md text-text-main transition-colors">
+                  X
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
