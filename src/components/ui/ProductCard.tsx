@@ -20,7 +20,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleWhatsAppConsult = () => {
     const message = `Hola, tengo una duda sobre ${product.title} (SKU: ${product.sku})`;
-    const url = `https://wa.me/5491100000000?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/5493755221332?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
 

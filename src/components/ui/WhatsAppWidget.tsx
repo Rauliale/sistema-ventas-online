@@ -10,7 +10,7 @@ export const WhatsAppWidget: React.FC = () => {
 
   if (pathname?.startsWith('/admin')) return null;
 
-  const phone = "5491100000000"; // Reemplazar por el nro real
+  const phone = "5493755221332"; // Nro configurado
 
   const options = [
     { label: "Quiero asesoramiento sobre una herramienta", text: "Hola, necesito asesoramiento sobre una herramienta." },

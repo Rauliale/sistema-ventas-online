@@ -99,7 +99,7 @@ export default function CheckoutPage() {
 
     if (paymentMethod === 'transfer') {
       const message = `Hola, quiero confirmar mi orden #${orderData.order_number} por un total de $${getTotal().toLocaleString('es-AR')}. Adjunto el comprobante de transferencia.`;
-      const url = `https://wa.me/5491100000000?text=${encodeURIComponent(message)}`;
+      const url = `https://wa.me/5493755221332?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       toast.success('¡Orden recibida! Te esperamos en WhatsApp.');
       router.push('/');
