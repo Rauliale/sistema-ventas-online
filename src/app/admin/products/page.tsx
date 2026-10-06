@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase/client';
 import { Product } from '../../../lib/api/products';
 import { Button } from '../../../components/ui/Button';
 import { Plus } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -22,10 +23,12 @@ export default function AdminProductsPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-text-main">Catálogo de Productos</h1>
-        <Button variant="primary" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Producto
-        </Button>
+        <Link href="/admin/products/new">
+          <Button variant="primary" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nuevo Producto
+          </Button>
+        </Link>
       </div>
 
       <div className="bg-surface rounded-lg border border-gray-200 shadow-sm overflow-hidden">
