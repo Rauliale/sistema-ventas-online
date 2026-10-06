@@ -11,9 +11,13 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ initialProducts 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Extract unique categories directly from products for the MVP
+  // Extract unique category names
   const categories = useMemo(() => {
-    const cats = new Set(initialProducts.map(p => p.category_id));
+    const cats = new Set(
+      initialProducts
+        .map(p => p.categories?.name || p.category_id)
+        .filter(Boolean)
+    );
     return Array.from(cats);
   }, [initialProducts]);
 
@@ -21,7 +25,8 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ initialProducts 
     return initialProducts.filter(product => {
       const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             product.sku.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory ? product.category_id === selectedCategory : true;
+      const catName = product.categories?.name || product.category_id;
+      const matchesCategory = selectedCategory ? catName === selectedCategory : true;
       return matchesSearch && matchesCategory;
     });
   }, [initialProducts, searchTerm, selectedCategory]);

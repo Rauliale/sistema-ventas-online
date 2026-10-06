@@ -11,6 +11,7 @@ export interface Product {
   compare_at_price: number | null;
   images: string[];
   category_id: string;
+  categories?: { name: string };
   is_active: boolean;
 }
 
@@ -18,7 +19,7 @@ export interface Product {
 export const getProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, categories(name)')
     .eq('is_active', true)
     .order('created_at', { ascending: false });
 

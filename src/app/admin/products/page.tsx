@@ -64,7 +64,7 @@ export default function AdminProductsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-primary hover:underline text-sm font-medium">Editar</button>
+                      <Link href={`/admin/products/${product.id}`} className="text-primary hover:underline text-sm font-medium">Editar</Link>
                     </td>
                   </tr>
                 ))
