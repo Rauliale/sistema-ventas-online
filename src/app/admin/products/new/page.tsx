@@ -5,12 +5,21 @@ import { supabase } from '../../../../lib/supabase/client';
 import { Button } from '../../../../components/ui/Button';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 
 export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const handleGoogleSearch = () => {
+    if (!formData.title) {
+      toast.error('Escribe el Título del Producto primero para buscar su imagen.');
+      return;
+    }
+    window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(formData.title)}`, '_blank');
+  };
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -63,6 +72,28 @@ export default function NewProductPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    let uploadedImageUrl = formData.image_url;
+
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, imageFile);
+        
+      if (uploadError) {
+        toast.error(`Error subiendo imagen: ${uploadError.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+        
+      uploadedImageUrl = publicUrlData.publicUrl;
+    }
+
     const productPayload = {
       sku: formData.sku,
       title: formData.title,
@@ -72,7 +103,7 @@ export default function NewProductPage() {
       price: parseFloat(formData.price),
       compare_at_price: formData.compare_at_price ? parseFloat(formData.compare_at_price) : null,
       category_id: formData.category_id || null,
-      images: formData.image_url ? [formData.image_url] : [],
+      images: uploadedImageUrl ? [uploadedImageUrl] : [],
       is_active: formData.is_active
     };
 
@@ -142,10 +173,47 @@ export default function NewProductPage() {
             <input type="number" min="0" step="0.01" name="compare_at_price" value={formData.compare_at_price} onChange={handleChange} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Opcional. Ej: 180000" />
           </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-text-main mb-1">URL de la Imagen</label>
-            <input type="url" name="image_url" value={formData.image_url} onChange={handleChange} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="https://ejemplo.com/imagen.jpg" />
-            <p className="text-xs text-text-muted mt-1">Por ahora se usa un enlace directo a la imagen.</p>
+          <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-text-main">Imagen del Producto</label>
+              <button type="button" onClick={handleGoogleSearch} className="flex items-center gap-2 text-sm text-primary hover:underline font-medium">
+                <Search className="h-4 w-4" />
+                Buscar imagen en Google
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs text-text-muted mb-1 block">Subir desde la PC:</span>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setImageFile(e.target.files[0]);
+                      setFormData(prev => ({ ...prev, image_url: '' })); // Clear URL if file selected
+                    }
+                  }} 
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary bg-white text-sm" 
+                />
+              </div>
+              <div>
+                <span className="text-xs text-text-muted mb-1 block">O pegar URL directa:</span>
+                <input 
+                  type="url" 
+                  name="image_url" 
+                  value={formData.image_url} 
+                  onChange={(e) => {
+                    handleChange(e);
+                    setImageFile(null); // Clear file if URL is typed
+                  }} 
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary text-sm bg-white" 
+                  placeholder="https://ejemplo.com/imagen.jpg" 
+                  disabled={!!imageFile}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-text-muted mt-2">Puedes subir una imagen desde tu PC o pegar directamente un enlace.</p>
           </div>
 
           <div className="md:col-span-2">
