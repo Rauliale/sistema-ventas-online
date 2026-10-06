@@ -2,11 +2,27 @@
 import React, { useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
 import { Button } from '../../components/ui/Button';
+import { supabase } from '../../lib/supabase/client';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
-  const { items, getTotal, getTotalItems } = useCartStore();
+  const router = useRouter();
+  const { items, getTotal, clearCart } = useCartStore();
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'transfer'>('mercadopago');
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    street: '',
+    city: '',
+    cp: '',
+    notes: ''
+  });
 
   if (items.length === 0) {
     return (
@@ -20,20 +36,80 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validación básica temprana
+    setIsSubmitting(true);
     
-    // Aquí se conectaría con la API de orders para guardar en BD (Supabase)
-    // y luego redirigir a MercadoPago o WhatsApp según el medio de pago.
-    
+    // 1. Guardar orden en Supabase
+    const orderPayload = {
+      customer_name: formData.name,
+      customer_email: formData.email,
+      customer_phone: formData.phone,
+      shipping_type: deliveryType,
+      shipping_address: deliveryType === 'delivery' ? {
+        street: formData.street,
+        city: formData.city,
+        postal_code: formData.cp,
+        notes: formData.notes
+      } : null,
+      payment_method: paymentMethod,
+      payment_status: 'pending',
+      order_status: 'new',
+      total_amount: getTotal()
+    };
+
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .insert([orderPayload])
+      .select()
+      .single();
+
+    if (orderError) {
+      toast.error('Error al procesar la orden: ' + orderError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // 2. Guardar items de la orden
+    const orderItemsPayload = items.map(item => ({
+      order_id: orderData.id,
+      product_id: item.product.id,
+      product_title: item.product.title,
+      quantity: item.quantity,
+      unit_price: item.product.price
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItemsPayload);
+
+    if (itemsError) {
+      toast.error('Error al procesar los productos: ' + itemsError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // 3. Limpiar carrito y redirigir
+    clearCart();
+    setIsSubmitting(false);
+
     if (paymentMethod === 'transfer') {
-      const message = `Hola, quiero confirmar mi orden de compra por un total de $${getTotal().toLocaleString('es-AR')}. Adjunto el comprobante de transferencia.`;
+      const message = `Hola, quiero confirmar mi orden #${orderData.order_number} por un total de $${getTotal().toLocaleString('es-AR')}. Adjunto el comprobante de transferencia.`;
       const url = `https://wa.me/5491100000000?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
+      toast.success('¡Orden recibida! Te esperamos en WhatsApp.');
+      router.push('/');
     } else {
-      alert("Redirigiendo a Mercado Pago (Checkout Pro)...");
-      // Integración con MercadoPago Preference API aquí
+      toast.success('¡Orden guardada! Redirigiendo a Mercado Pago...');
+      // TODO: Redirigir a la URL de preferencia generada por backend de MercadoPago
+      // Por ahora simulamos
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
     }
   };
 
@@ -51,16 +127,16 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold mb-4 text-text-main">1. Datos Personales</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-text-muted mb-1">Nombre y Apellido</label>
-                    <input required type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    <label className="block text-sm font-medium text-text-muted mb-1">Nombre y Apellido *</label>
+                    <input required name="name" value={formData.name} onChange={handleChange} type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-text-muted mb-1">Celular / WhatsApp *</label>
-                    <input required type="tel" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    <input required name="phone" value={formData.phone} onChange={handleChange} type="tel" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-text-muted mb-1">Correo Electrónico</label>
-                    <input required type="email" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    <label className="block text-sm font-medium text-text-muted mb-1">Correo Electrónico *</label>
+                    <input required name="email" value={formData.email} onChange={handleChange} type="email" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                   </div>
                 </div>
               </div>
@@ -82,20 +158,20 @@ export default function CheckoutPage() {
                 {deliveryType === 'delivery' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-text-muted mb-1">Dirección completa</label>
-                      <input required type="text" placeholder="Calle, Número, Piso/Dpto..." className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                      <label className="block text-sm font-medium text-text-muted mb-1">Dirección completa *</label>
+                      <input required name="street" value={formData.street} onChange={handleChange} type="text" placeholder="Calle, Número, Piso/Dpto..." className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-text-muted mb-1">Localidad / Ciudad</label>
-                      <input required type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                      <label className="block text-sm font-medium text-text-muted mb-1">Localidad / Ciudad *</label>
+                      <input required name="city" value={formData.city} onChange={handleChange} type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-text-muted mb-1">Código Postal (CP) *</label>
-                      <input required type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                      <input required name="cp" value={formData.cp} onChange={handleChange} type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-text-muted mb-1">Notas de entrega (Opcional)</label>
-                      <textarea rows={2} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"></textarea>
+                      <textarea name="notes" value={formData.notes} onChange={handleChange} rows={2} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"></textarea>
                     </div>
                   </div>
                 )}
@@ -150,7 +226,7 @@ export default function CheckoutPage() {
                 </div>
                 <p className="text-xs text-text-muted mt-1 text-right">* Envío a coordinar</p>
               </div>
-              <Button form="checkout-form" type="submit" variant="primary" className="w-full py-3 text-base">
+              <Button isLoading={isSubmitting} form="checkout-form" type="submit" variant="primary" className="w-full py-3 text-base">
                 Confirmar y Pagar
               </Button>
             </div>
