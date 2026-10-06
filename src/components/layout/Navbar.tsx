@@ -6,6 +6,7 @@ import { useCartStore } from '../../store/useCartStore';
 export const Navbar: React.FC = () => {
   const toggleCart = useCartStore((state) => state.toggleCart);
   const totalItems = useCartStore((state) => state.getTotalItems());
+  const totalAmount = useCartStore((state) => state.getTotal());
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-surface shadow-sm">
@@ -21,18 +22,26 @@ export const Navbar: React.FC = () => {
         </nav>
 
         <div className="flex items-center gap-4">
-          <button
-            onClick={toggleCart}
-            className="relative p-2 text-text-main hover:text-primary focus:outline-none"
-            aria-label="Carrito de compras"
-          >
-            <ShoppingCart className="h-6 w-6" />
+          <div className="flex items-center gap-3">
             {totalItems > 0 && (
-              <span className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] font-bold text-surface">
-                {totalItems}
-              </span>
+              <div className="hidden flex-col items-end sm:flex">
+                <span className="text-xs font-medium text-text-muted">Mi Carrito</span>
+                <span className="text-sm font-bold text-text-main">${totalAmount.toLocaleString('es-AR')}</span>
+              </div>
             )}
-          </button>
+            <button
+              onClick={toggleCart}
+              className="relative rounded-full bg-gray-100 p-2 text-text-main hover:bg-gray-200 focus:outline-none transition-colors"
+              aria-label="Carrito de compras"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] font-bold text-surface shadow-sm">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </header>

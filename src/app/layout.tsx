@@ -4,6 +4,8 @@ import { Navbar } from "../components/layout/Navbar";
 import { CartDrawer } from "../components/layout/CartDrawer";
 import { WhatsAppWidget } from "../components/ui/WhatsAppWidget";
 
+import { Toaster } from 'react-hot-toast';
+
 export const metadata: Metadata = {
   title: "Ferretería Online",
   description: "Catálogo y Venta Web de Herramientas e Insumos",
@@ -17,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased min-h-screen bg-background flex flex-col">
+        <Toaster position="bottom-left" />
         <Navbar />
         <main className="flex-1">
           {children}

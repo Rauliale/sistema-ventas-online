@@ -4,6 +4,8 @@ import { Product } from '../../lib/api/products';
 import { Button } from './Button';
 import { useCartStore } from '../../store/useCartStore';
 
+import toast from 'react-hot-toast';
+
 interface ProductCardProps {
   product: Product;
 }
@@ -13,6 +15,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleAddToCart = () => {
     addItem(product);
+    toast.success('Agregado al carrito');
   };
 
   const handleWhatsAppConsult = () => {
