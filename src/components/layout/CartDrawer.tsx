@@ -3,6 +3,7 @@ import React from 'react';
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 import { Button } from '../ui/Button';
+import Link from 'next/link';
 
 import { usePathname } from 'next/navigation';
 
@@ -80,11 +81,11 @@ export const CartDrawer: React.FC = () => {
             <p className="text-xs text-text-muted mb-4">
               El costo final de envío se coordina tras finalizar la orden según tu zona y peso del paquete.
             </p>
-            <a href="/checkout" onClick={toggleCart} className="w-full block">
+            <Link href="/checkout" onClick={toggleCart} className="w-full block">
               <Button variant="primary" className="w-full">
                 Continuar con la compra
               </Button>
-            </a>
+            </Link>
           </div>
         )}
       </div>
