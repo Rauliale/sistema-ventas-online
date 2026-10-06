@@ -58,7 +58,7 @@ export default function OrderDetailPage() {
       toast.error('Error al actualizar estado: ' + error.message);
     } else {
       toast.success('Estado actualizado');
-      setOrder(prev => ({ ...prev, [field]: value }));
+      setOrder((prev: any) => ({ ...prev, [field]: value }));
     }
   };
 
@@ -77,7 +77,7 @@ export default function OrderDetailPage() {
       toast.error('Error al guardar tracking: ' + error.message);
     } else {
       toast.success('Código de seguimiento guardado');
-      setOrder(prev => ({ ...prev, tracking_number: tracking }));
+      setOrder((prev: any) => ({ ...prev, tracking_number: tracking }));
     }
   };
 
@@ -93,7 +93,7 @@ export default function OrderDetailPage() {
           </Link>
           <h1 className="text-2xl font-bold text-text-main">Pedido #{order.order_number}</h1>
         </div>
-        <Button variant="outline" onClick={() => window.print()} className="flex gap-2 print:hidden">
+        <Button variant="secondary" onClick={() => window.print()} className="flex gap-2 print:hidden">
           <Printer className="h-4 w-4" /> Imprimir Remito
         </Button>
       </div>
