@@ -44,6 +44,7 @@ export async function POST(request: Request) {
           pending: `${siteUrl}/?status=pending`,
         },
         auto_return: 'approved',
+        notification_url: `${siteUrl}/api/webhooks/mercadopago`,
         external_reference: orderData.id, // Relacionamos el pago con nuestro ID de orden
       }
     });
