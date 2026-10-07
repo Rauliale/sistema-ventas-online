@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabase/client';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Printer } from 'lucide-react';
+import { ArrowLeft, Printer, MessageCircle } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import toast from 'react-hot-toast';
 
@@ -79,6 +79,35 @@ export default function OrderDetailPage() {
       toast.success('Código de seguimiento guardado');
       setOrder((prev: any) => ({ ...prev, tracking_number: tracking }));
     }
+  };
+
+  const handleWhatsAppNotification = () => {
+    let message = `Hola ${order.customer_name}! 👋 Te contactamos de Ferretería Online.\n\nTe escribimos sobre tu pedido #${order.order_number}:\n\n`;
+    
+    switch (order.order_status) {
+      case 'new':
+        message += `¡Hemos recibido tu pedido con éxito! Ya lo estamos revisando.`;
+        break;
+      case 'preparing':
+        message += `¡Tu pedido ya está en preparación! Pronto estará listo.`;
+        break;
+      case 'shipped':
+        message += `🚚 ¡Tu pedido ya fue despachado!`;
+        if (order.tracking_number) {
+          message += `\nTu código de seguimiento es: *${order.tracking_number}*`;
+        }
+        break;
+      case 'delivered':
+        message += `✅ ¡Tu pedido figura como entregado! Esperamos que lo disfrutes.`;
+        break;
+      case 'cancelled':
+        message += `❌ Lamentamos informarte que tu pedido ha sido cancelado. Si tienes dudas, consúltanos por aquí.`;
+        break;
+    }
+    
+    const phone = order.customer_phone.replace(/\D/g, '');
+    const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(waLink, '_blank');
   };
 
   if (isLoading) return <div className="p-8 text-center text-text-muted">Cargando detalles de la orden...</div>;
@@ -209,8 +238,16 @@ export default function OrderDetailPage() {
               <option value="delivered">Entregado</option>
               <option value="cancelled">Cancelado</option>
             </select>
+            
+            <Button 
+              type="button" 
+              onClick={handleWhatsAppNotification}
+              className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white"
+            >
+              <MessageCircle className="h-4 w-4" /> Notificar estado por WhatsApp
+            </Button>
 
-            <form onSubmit={updateTracking} className="pt-4 border-t border-gray-100">
+            <form onSubmit={updateTracking} className="pt-4 border-t border-gray-100 mt-4">
               <label className="block text-sm font-medium text-text-main mb-2">Código de Seguimiento</label>
               <div className="flex gap-2">
                 <input 
