@@ -64,7 +64,9 @@ export default function OrderDetailPage() {
 
   const updateTracking = async (e: React.FormEvent) => {
     e.preventDefault();
-    const tracking = (e.target as any).tracking.value;
+    const provider = (e.target as any).provider.value;
+    const code = (e.target as any).tracking.value;
+    const tracking = provider && code ? `${provider}|${code}` : code;
     
     setIsUpdating(true);
     const { error } = await supabase
@@ -81,6 +83,37 @@ export default function OrderDetailPage() {
     }
   };
 
+  const getTrackingInfo = (trackingString: string | null) => {
+    if (!trackingString) return { provider: '', code: '' };
+    if (trackingString.includes('|')) {
+      const [provider, code] = trackingString.split('|');
+      return { provider, code };
+    }
+    return { provider: '', code: trackingString };
+  };
+
+  const getProviderName = (providerId: string) => {
+    switch(providerId) {
+      case 'andreani': return 'Andreani';
+      case 'correo_argentino': return 'Correo Argentino';
+      case 'oca': return 'OCA';
+      case 'urbano': return 'Urbano';
+      case 'via_cargo': return 'Vía Cargo';
+      default: return 'la empresa de transporte';
+    }
+  };
+
+  const getProviderUrl = (providerId: string, code: string) => {
+    switch(providerId) {
+      case 'andreani': return `https://seguimiento.andreani.com/envio/${code}`;
+      case 'correo_argentino': return `https://www.correoargentino.com.ar/formularios/e-commerce`; 
+      case 'oca': return `https://www.oca.com.ar/Envios/Paquetes/?numero=${code}`;
+      case 'urbano': return `https://www.urbano.com.ar/`;
+      case 'via_cargo': return `https://www.viacargo.com.ar/tracking`;
+      default: return null;
+    }
+  };
+
   const handleWhatsAppNotification = () => {
     let message = `Hola ${order.customer_name}! 👋 Te contactamos de Ferretería Online.\n\nTe escribimos sobre tu pedido #${order.order_number}:\n\n`;
     
@@ -94,7 +127,15 @@ export default function OrderDetailPage() {
       case 'shipped':
         message += `🚚 ¡Tu pedido ya fue despachado!`;
         if (order.tracking_number) {
-          message += `\nTu código de seguimiento es: *${order.tracking_number}*`;
+          const { provider, code } = getTrackingInfo(order.tracking_number);
+          const providerName = getProviderName(provider);
+          const url = getProviderUrl(provider, code);
+          
+          if (provider && url) {
+            message += `\n\nTu envío va por *${providerName}*. Ingresá a este enlace y seguí tu pedido con el número de referencia: *${code}*\n🔗 ${url}`;
+          } else {
+            message += `\n\nTu código de seguimiento es: *${code}*`;
+          }
         }
         break;
       case 'delivered':
@@ -269,16 +310,30 @@ export default function OrderDetailPage() {
             </Button>
 
             <form onSubmit={updateTracking} className="pt-4 border-t border-gray-100 mt-4">
-              <label className="block text-sm font-medium text-text-main mb-2">Código de Seguimiento</label>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  name="tracking" 
-                  defaultValue={order.tracking_number || ''}
-                  placeholder="Ej: TN000000000AR"
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                />
-                <Button type="submit" variant="primary" disabled={isUpdating}>Guardar</Button>
+              <label className="block text-sm font-medium text-text-main mb-2">Envío y Seguimiento</label>
+              <div className="space-y-2">
+                <select 
+                  name="provider"
+                  defaultValue={getTrackingInfo(order.tracking_number).provider}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                >
+                  <option value="">Otro / Personalizado</option>
+                  <option value="andreani">Andreani</option>
+                  <option value="correo_argentino">Correo Argentino</option>
+                  <option value="oca">OCA</option>
+                  <option value="urbano">Urbano</option>
+                  <option value="via_cargo">Vía Cargo</option>
+                </select>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    name="tracking" 
+                    defaultValue={getTrackingInfo(order.tracking_number).code}
+                    placeholder="Código de Seguimiento (Ej: TN00000)"
+                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  />
+                  <Button type="submit" variant="primary" disabled={isUpdating}>Guardar</Button>
+                </div>
               </div>
             </form>
           </div>
