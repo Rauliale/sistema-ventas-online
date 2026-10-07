@@ -31,6 +31,7 @@ export default function NewComboPage() {
   const [profitMargin, setProfitMargin] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   
   const [comboItems, setComboItems] = useState<ComboItem[]>([]);
   const [selectedProductId, setSelectedProductId] = useState('');
@@ -110,6 +111,26 @@ export default function NewComboPage() {
 
     setIsSubmitting(true);
     try {
+      let finalImageUrl = imageUrl;
+      
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, imageFile);
+          
+        if (uploadError) {
+          throw new Error(`Error subiendo imagen: ${uploadError.message}`);
+        }
+        
+        const { data: publicUrlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+          
+        finalImageUrl = publicUrlData.publicUrl;
+      }
+
       // 1. Crear el producto combo
       const { data: comboData, error: comboError } = await supabase
         .from('products')
@@ -121,7 +142,7 @@ export default function NewComboPage() {
           profit_margin: profitMargin ? parseFloat(profitMargin) : null,
           price: finalPrice,
           compare_at_price: suggestedPrice > finalPrice ? suggestedPrice : null,
-          images: imageUrl ? [imageUrl] : [],
+          images: finalImageUrl ? [finalImageUrl] : [],
           is_combo: true,
           is_active: true
         }])
@@ -184,8 +205,37 @@ export default function NewComboPage() {
                 <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full rounded-md border border-gray-300 px-3 py-2" placeholder="Este combo incluye..." />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">URL de Imagen</label>
-                <input type="url" value={imageUrl} onChange={e => setImageUrl(e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-2" placeholder="https://..." />
+                <label className="block text-sm font-medium mb-1">Imagen del Combo</label>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-xs text-gray-500 mb-1 block">Subir desde la PC:</span>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          setImageFile(e.target.files[0]);
+                          setImageUrl('');
+                        }
+                      }} 
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white" 
+                    />
+                  </div>
+                  <div>
+                    <span className="text-xs text-gray-500 mb-1 block">O pegar URL directa:</span>
+                    <input 
+                      type="url" 
+                      value={imageUrl} 
+                      onChange={e => {
+                        setImageUrl(e.target.value);
+                        setImageFile(null);
+                      }} 
+                      disabled={!!imageFile}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white" 
+                      placeholder="https://..." 
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -231,7 +281,7 @@ export default function NewComboPage() {
               <select 
                 value={selectedProductId} 
                 onChange={e => setSelectedProductId(e.target.value)} 
-                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="flex-1 min-w-0 w-full rounded-md border border-gray-300 px-3 py-2 text-sm truncate"
               >
                 <option value="">Buscar herramienta...</option>
                 {products.map(p => (
@@ -254,12 +304,12 @@ export default function NewComboPage() {
                 </div>
               ) : (
                 comboItems.map(item => (
-                  <div key={item.product_id} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                    <div className="flex-1 pr-3">
-                      <p className="text-xs font-bold text-gray-500">{item.product?.sku}</p>
-                      <p className="text-sm font-medium line-clamp-1">{item.product?.title}</p>
+                  <div key={item.product_id} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg gap-2">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-xs font-bold text-gray-500 truncate">{item.product?.sku}</p>
+                      <p className="text-sm font-medium truncate" title={item.product?.title}>{item.product?.title}</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 shrink-0">
                       <input 
                         type="number" 
                         min="1" 
