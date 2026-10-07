@@ -12,7 +12,7 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     const loadProducts = async () => {
-      const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      const { data } = await supabase.from('products').select('*').eq('is_combo', false).order('created_at', { ascending: false });
       if (data) setProducts(data as Product[]);
       setIsLoading(false);
     };

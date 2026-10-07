@@ -73,6 +73,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Package className="h-5 w-5" />
             Productos
           </Link>
+          <Link href="/admin/combos" className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${pathname?.includes('/admin/combos') ? 'bg-primary/10 text-primary font-medium' : 'text-text-muted hover:bg-gray-100 hover:text-text-main'}`}>
+            <Package className="h-5 w-5" />
+            Combos Promocionales
+          </Link>
           <Link href="/admin/orders" className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${pathname === '/admin/orders' ? 'bg-primary/10 text-primary font-medium' : 'text-text-muted hover:bg-gray-100 hover:text-text-main'}`}>
             <ShoppingBag className="h-5 w-5" />
             Pedidos
