@@ -13,6 +13,7 @@ export interface Product {
   category_id: string;
   categories?: { name: string };
   is_active: boolean;
+  is_combo?: boolean;
 }
 
 // Wrapper for Supabase data fetching to decouple from UI
