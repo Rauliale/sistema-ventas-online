@@ -105,8 +105,19 @@ export default function OrderDetailPage() {
         break;
     }
     
-    const phone = order.customer_phone.replace(/\D/g, '');
-    const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    let rawPhone = order.customer_phone.replace(/\D/g, '');
+    // Formateo inteligente para números de Argentina
+    if (rawPhone.startsWith('549')) {
+      // Está correcto
+    } else if (rawPhone.startsWith('54')) {
+      rawPhone = '549' + rawPhone.substring(2); // Agrega el 9 de celular
+    } else if (rawPhone.startsWith('0')) {
+      rawPhone = '549' + rawPhone.substring(1); // Reemplaza el 0 por 549
+    } else if (rawPhone.length === 10) {
+      rawPhone = '549' + rawPhone; // Si puso 10 números (ej 1144445555)
+    }
+    
+    const waLink = `https://wa.me/${rawPhone}?text=${encodeURIComponent(message)}`;
     window.open(waLink, '_blank');
   };
 
@@ -177,7 +188,17 @@ export default function OrderDetailPage() {
                 <h3 className="text-text-muted mb-1 text-xs uppercase font-semibold">Datos de Contacto</h3>
                 <p className="font-medium">{order.customer_name}</p>
                 <p>
-                  <a href={`https://wa.me/${order.customer_phone.replace(/\D/g,'')}`} target="_blank" className="text-primary hover:underline">
+                  <a 
+                    href={`https://wa.me/${
+                      order.customer_phone.replace(/\D/g, '').startsWith('54') 
+                        ? order.customer_phone.replace(/\D/g, '') 
+                        : order.customer_phone.replace(/\D/g, '').startsWith('0')
+                          ? '549' + order.customer_phone.replace(/\D/g, '').substring(1)
+                          : '549' + order.customer_phone.replace(/\D/g, '')
+                    }`} 
+                    target="_blank" 
+                    className="text-primary hover:underline"
+                  >
                     {order.customer_phone}
                   </a>
                 </p>
