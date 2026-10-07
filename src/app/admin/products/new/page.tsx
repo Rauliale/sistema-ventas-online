@@ -49,7 +49,8 @@ export default function NewProductPage() {
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return;
     
-    const { data, error } = await supabase.from('categories').insert([{ name: newCategoryName }]).select();
+    const slug = newCategoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const { data, error } = await supabase.from('categories').insert([{ name: newCategoryName, slug }]).select();
     
     if (error) {
       toast.error('Error al crear categoría: ' + error.message);
