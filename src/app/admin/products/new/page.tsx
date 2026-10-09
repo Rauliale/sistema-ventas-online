@@ -31,7 +31,9 @@ export default function NewProductPage() {
     compare_at_price: '',
     category_id: '',
     image_url: '',
-    is_active: true
+    is_active: true,
+    is_consumable: false,
+    repurchase_days: 30
   });
 
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
@@ -125,7 +127,9 @@ export default function NewProductPage() {
       compare_at_price: formData.compare_at_price ? parseFloat(formData.compare_at_price) : null,
       category_id: formData.category_id || null,
       images: uploadedImageUrl ? [uploadedImageUrl] : [],
-      is_active: formData.is_active
+      is_active: formData.is_active,
+      is_consumable: formData.is_consumable,
+      repurchase_days: formData.repurchase_days
     };
 
     const { error } = await supabase.from('products').insert([productPayload]);
@@ -264,6 +268,29 @@ export default function NewProductPage() {
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-text-main mb-1">Descripción</label>
             <textarea name="description" value={formData.description} onChange={handleChange} rows={4} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Detalles técnicos y características del producto..." />
+          </div>
+
+          <div className="md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-100 flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="is_consumable" name="is_consumable" checked={formData.is_consumable} onChange={handleChange} className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
+              <label htmlFor="is_consumable" className="text-sm font-medium text-blue-900">
+                Es Consumible (Generar alertas de recompra)
+              </label>
+            </div>
+            
+            {formData.is_consumable && (
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-blue-800">Días para reponer:</label>
+                <input 
+                  type="number" 
+                  name="repurchase_days" 
+                  value={formData.repurchase_days} 
+                  onChange={handleChange} 
+                  min="1"
+                  className="w-20 rounded-md border border-blue-200 px-2 py-1 text-sm focus:border-primary focus:outline-none" 
+                />
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-2 flex items-center gap-2">

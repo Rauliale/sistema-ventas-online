@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '../../lib/supabase/client';
-import { Package, ShoppingBag, LogOut, LayoutDashboard } from 'lucide-react';
+import { Package, ShoppingBag, LogOut, LayoutDashboard, Users } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -80,6 +80,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/orders" className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${pathname === '/admin/orders' ? 'bg-primary/10 text-primary font-medium' : 'text-text-muted hover:bg-gray-100 hover:text-text-main'}`}>
             <ShoppingBag className="h-5 w-5" />
             Pedidos
+          </Link>
+          <Link href="/admin/retention" className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${pathname === '/admin/retention' ? 'bg-primary/10 text-primary font-medium' : 'text-text-muted hover:bg-gray-100 hover:text-text-main'}`}>
+            <Users className="h-5 w-5" />
+            Retención de Clientes
           </Link>
         </nav>
         <div className="p-4 border-t border-gray-200">
